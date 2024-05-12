@@ -32,7 +32,7 @@ if function_index in func_dict:
     func_name, func2min = func_dict[function_index]
     print(f'You chose {function_index}: {func_name}')
 
-    methods = ['gd', 'newton', 'bfgs', 'sr1']
+    methods = ['gd', 'newton']
     results = {}
     x0 = np.array([8, 6], dtype=np.float64)
 
