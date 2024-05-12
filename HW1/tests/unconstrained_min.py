@@ -301,7 +301,7 @@ def unconstrained_minimization(func2min, x0, max_iter, obj_tol, param_tol, metho
     print('The chosen method is =', method)
 
     if method == 'gd':
-        final_x, final_fx, x_track, f_track, success_flag = gradient_descent(func2min, x0, max_iter=10000, obj_tol, param_tol)
+        final_x, final_fx, x_track, f_track, success_flag = gradient_descent(func2min, x0, max_iter, obj_tol, param_tol)
     elif method == 'newton':
         final_x, final_fx, x_track, f_track, success_flag = newton_descent(func2min, x0, max_iter, obj_tol, param_tol)
     else:
@@ -311,7 +311,7 @@ def unconstrained_minimization(func2min, x0, max_iter, obj_tol, param_tol, metho
         f_track = None
         success_flag = False
         print(
-            'The chosen method does not fit. Please make you use on of the following strings: gd, newton, bfgs or sr1')
+            'The chosen method does not fit. Please make you use on of the following strings: gd, newton')
 
     return (final_x, final_fx, x_track, f_track, success_flag, method)
 

@@ -1,8 +1,8 @@
 #test_constrained_min.py
 import numpy as np
-from HW1.src import unconstrained_min
-from HW1.src import utils
-from tests import examples
+import unconstrained_min
+import utils
+import examples
 
 # test params
 max_iter = 1000
@@ -43,6 +43,7 @@ if function_index in func_dict:
             results[method] = unconstrained_min.unconstrained_minimization(func2min, x0, max_iter, obj_tol, step_tol, method)
 
     # plot all methods tracks on top of the contour
+    print(1)
     utils.plot_contour(func2min, func_name, *results.values())
 
     print(f'End of {func_name} analysis')

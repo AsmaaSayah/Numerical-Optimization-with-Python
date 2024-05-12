@@ -94,8 +94,6 @@ def example_func_nonquad(X, en_hessian):
 
 print("ok")
 
-import numpy as np
-import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 # Define the quadratic objective function
@@ -138,61 +136,7 @@ plt.show()
 
 print("ok2")
 
-# import numpy as np
-# import matplotlib.pyplot as plt
-# from mpl_toolkits.mplot3d import Axes3D
-#
-# # Define the objective function
-# def objective_func(x, y):
-#     return x + y
-#
-# # Define the inequality constraint functions
-# def constraint_1(x, y):
-#     return -x + y - 1
-#
-# def constraint_2(x, y):
-#     return y - 1
-#
-# def constraint_3(x, y):
-#     return x - 2
-#
-# def constraint_4(x, y):
-#     return -y
-#
-# # Create a grid of points in the feasible region
-# x = np.linspace(0, 2, 50)
-# y = np.linspace(0, 1, 50)
-# X, Y = np.meshgrid(x, y)
-#
-# # Evaluate the objective function and constraint functions at each point in the grid
-# Z_obj = objective_func(X, Y)
-# Z_constr_1 = constraint_1(X, Y)
-# Z_constr_2 = constraint_2(X, Y)
-# Z_constr_3 = constraint_3(X, Y)
-# Z_constr_4 = constraint_4(X, Y)
-#
-# # Create a 3D plot
-# fig = plt.figure()
-# ax = fig.add_subplot(111, projection='3d')
-#
-# # Plot the objective function surface
-# ax.plot_surface(X, Y, Z_obj, cmap='viridis', alpha=0.5)
-#
-# # Plot the inequality constraints
-# ax.plot_surface(X, Y, Z_constr_1, color='r', alpha=0.3)
-# ax.plot_surface(X, Y, Z_constr_2, color='g', alpha=0.3)
-# ax.plot_surface(X, Y, Z_constr_3, color='b', alpha=0.3)
-# ax.plot_surface(X, Y, Z_constr_4, color='m', alpha=0.3)
-#
-# # Set labels and title
-# ax.set_xlabel('X')
-# ax.set_ylabel('Y')
-# ax.set_zlabel('Objective Function')
-# ax.set_title('Objective Function and Constraints')
-#
-# # Show the plot
-# plt.show()
-#
+
 
 print("ok3")
 import numpy as np

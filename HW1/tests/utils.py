@@ -9,7 +9,7 @@ def draw_results(ax, results, color, marker, label):
         ax.plot(results[2][:, 0], results[2][:, 1], results[3], c=color)
 
 
-def plot_contour(obj_func, func_name, results_gd, results_newton, results_bfgs, results_sr1):
+def plot_contour(obj_func, func_name, results_gd, results_newton):
     # Color and marker modifications
     colors = ['crimson', 'seagreen', 'royalblue', 'purple']
     markers = ['o', 'v', '^', '<']
@@ -30,7 +30,7 @@ def plot_contour(obj_func, func_name, results_gd, results_newton, results_bfgs, 
     ax.contour3D(mesh_x, mesh_y, func_mesh_values, 60, cmap='magma')
 
     # Plotting the results
-    for result, color, marker in zip([results_gd, results_newton, results_bfgs, results_sr1], colors, markers):
+    for result, color, marker in zip([results_gd, results_newton], colors, markers):
         draw_results(ax, result, color, marker, result[5] if result else "")
 
     # Formatting the plot
