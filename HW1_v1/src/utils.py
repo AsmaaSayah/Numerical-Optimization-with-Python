@@ -1,10 +1,7 @@
-# src/utils.py
-
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-def plot_contour(obj_func, xlims, ylims, path=None, labels=None):
+def plot_contour(obj_func, xlims, ylims, paths=None, labels=None):
     """
     Plot contour lines of the objective function.
 
@@ -12,23 +9,32 @@ def plot_contour(obj_func, xlims, ylims, path=None, labels=None):
     - obj_func: The objective function.
     - xlims: Limits for the x-axis.
     - ylims: Limits for the y-axis.
-    - path: Path of iterations (optional).
-    - labels: Labels for the paths (optional).
+    - paths: List of paths (optional).
+    - labels: List of labels for paths (optional).
     """
-    print("OK_plot")
+def plot_contour(obj_func, xlims, ylims, paths=None, labels=None):
     x = np.linspace(xlims[0], xlims[1], 100)
     y = np.linspace(ylims[0], ylims[1], 100)
     X, Y = np.meshgrid(x, y)
-    Z = obj_func([X, Y])
+    Z = np.zeros_like(X)
+
+    for i in range(X.shape[0]):
+        for j in range(X.shape[1]):
+            Z[i, j] = obj_func([X[i, j], Y[i, j]])
+
     plt.contour(X, Y, Z, levels=20)
-    if path:
-        for p, label in zip(path, labels):
-            plt.plot(p[:, 0], p[:, 1], label=label)
+
+    if paths:
+        for path, label in zip(paths, labels):
+            plt.plot(path[:, 0], path[:, 1], label=label)
+
         plt.legend()
+
     plt.xlabel('x')
     plt.ylabel('y')
     plt.title('Contour Plot of Objective Function')
     plt.show()
+
 
 def plot_function_values(iter_values):
     """
@@ -37,10 +43,9 @@ def plot_function_values(iter_values):
     Parameters:
     - iter_values: Dictionary containing function values for each method.
     """
-    print("OK_plot")
-
     for label, values in iter_values.items():
         plt.plot(range(len(values)), values, label=label)
+    
     plt.xlabel('Iteration')
     plt.ylabel('Function Value')
     plt.title('Function Values vs. Iteration')

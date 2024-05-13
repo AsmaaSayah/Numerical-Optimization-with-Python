@@ -12,7 +12,7 @@ def quadratic_example(x, compute_hessian=True, example_num=1):
     else:
         raise ValueError("Invalid example number")
 
-    f = x @ Q @ x
+    f = x @ Q @ x  # Matrix multiplication to compute the function value
     g = 2 * Q.dot(x)
     h = 2 * Q if compute_hessian else None
     return f, g, h

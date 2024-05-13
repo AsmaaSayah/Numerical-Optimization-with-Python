@@ -23,6 +23,8 @@ class UnconstrainedMinimizer:
         self.c1 = c1
         self.c2 = c2
         self.step_scaling_factor = step_scaling_factor
+        self.iteration_paths = []  # Add an empty list attribute to store iteration paths
+
 
     def gradient_descent(self, func, grad, x0):
         """
@@ -42,6 +44,7 @@ class UnconstrainedMinimizer:
             x_new = x - step_length * grad
             if np.linalg.norm(x_new - x) < self.tol:
                 break
+            self.iteration_paths.append(x)
             x = x_new
         return x
 
@@ -64,6 +67,7 @@ class UnconstrainedMinimizer:
             x_new = x - step_length * np.linalg.inv(hessian) @ grad
             if np.linalg.norm(x_new - x) < self.tol:
                 break
+            self.iteration_paths.append(x)
             x = x_new
         return x
 
