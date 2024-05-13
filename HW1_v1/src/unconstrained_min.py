@@ -1,5 +1,3 @@
-# src/unconstrained_min.py
-
 import numpy as np
 
 class UnconstrainedMinimizer:
@@ -32,7 +30,7 @@ class UnconstrainedMinimizer:
 
         Parameters:
         - func: Objective function.
-        - grad: Gradient function.
+        - grad: Gradient vector.
         - x0: Initial guess.
 
         Returns:
@@ -40,9 +38,8 @@ class UnconstrainedMinimizer:
         """
         x = x0
         for _ in range(self.max_iter):
-            gradient = grad(x)
-            step_length, _ = self.wolfe_backtracking(func, grad, x, gradient)
-            x_new = x - step_length * gradient
+            step_length, _ = self.wolfe_backtracking(func, grad, x, grad)
+            x_new = x - step_length * grad
             if np.linalg.norm(x_new - x) < self.tol:
                 break
             x = x_new
@@ -54,8 +51,8 @@ class UnconstrainedMinimizer:
 
         Parameters:
         - func: Objective function.
-        - grad: Gradient function.
-        - hessian: Hessian function.
+        - grad: Gradient vector.
+        - hessian: Hessian matrix.
         - x0: Initial guess.
 
         Returns:
@@ -63,10 +60,8 @@ class UnconstrainedMinimizer:
         """
         x = x0
         for _ in range(self.max_iter):
-            gradient = grad(x)
-            hess = hessian(x)
-            step_length, _ = self.wolfe_backtracking(func, grad, x, gradient)
-            x_new = x - step_length * np.linalg.inv(hess) @ gradient
+            step_length, _ = self.wolfe_backtracking(func, grad, x, grad)
+            x_new = x - step_length * np.linalg.inv(hessian) @ grad
             if np.linalg.norm(x_new - x) < self.tol:
                 break
             x = x_new
@@ -78,18 +73,27 @@ class UnconstrainedMinimizer:
 
         Parameters:
         - func: Objective function.
-        - grad: Gradient function.
-        - hessian: Hessian function.
+        - grad: Gradient vector.
+        - hessian: Hessian matrix.
         - x0: Initial guess.
 
         Returns:
         - x: Optimal solution.
         """
-        print("OK_unconstrained_min")
         if self.method == 'gradient_descent':
-            return self.gradient_descent(func, grad, x0)
+            x_opt = self.gradient_descent(func, grad, x0)
+            # Compute f_opt using the objective function
+            f_opt = func(x_opt)[0]
+            # Determine success based on convergence criteria
+            success = True  # Example, adjust as needed
+            return x_opt, f_opt, success
         elif self.method == 'newton':
-            return self.newton(func, grad, hessian, x0)
+            x_opt = self.newton(func, grad, hessian, x0)
+            # Compute f_opt using the objective function
+            f_opt = func(x_opt)[0]
+            # Determine success based on convergence criteria
+            success = True  # Example, adjust as needed
+            return x_opt, f_opt, success
         else:
             raise ValueError("Invalid method. Choose from 'gradient_descent' or 'newton'")
 
@@ -99,7 +103,7 @@ class UnconstrainedMinimizer:
 
         Parameters:
         - func: Objective function.
-        - grad: Gradient function.
+        - grad: Gradient vector.
         - x: Current point.
         - direction: Search direction.
 
@@ -108,18 +112,20 @@ class UnconstrainedMinimizer:
         - func_value_next: Objective function value at next point.
         """
         step_length = 1.0
-        func_value_current, grad_current = func(x), grad(x).dot(direction)
+        func_value_current, grad_current = func(x)[0], grad.dot(direction)
+        print(grad_current)
         while True:
             next_x = x - step_length * direction
-            func_value_next = func(next_x)
+            func_value_next,grad_value_next,hessian_value_next = func(next_x)
+            print(grad_value_next,hessian_value_next)
             if (func_value_next > func_value_current + self.c1 * step_length * grad_current or
-                    (func(next_x) >= func(x) and step_length > 1e-10)):
+                    (func_value_next >= func_value_current and step_length > 1e-10)):
                 step_length *= self.step_scaling_factor
             else:
-                if grad(next_x).dot(direction) < self.c2 * grad_current:
+                if grad_value_next@direction < self.c2 * grad_current:
                     step_length *= 2
                     break
-                elif grad(next_x).dot(direction) > -self.c1 * grad_current:
+                elif grad_value_next@direction > -self.c1 * grad_current:
                     step_length *= self.step_scaling_factor
                 else:
                     break

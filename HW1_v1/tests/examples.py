@@ -12,10 +12,9 @@ def quadratic_example(x, compute_hessian=True, example_num=1):
     else:
         raise ValueError("Invalid example number")
 
-    f = np.dot(x.T, Q).dot(x)
+    f = x @ Q @ x
     g = 2 * Q.dot(x)
     h = 2 * Q if compute_hessian else None
-    print(f)
     return f, g, h
 
 def rosenbrock_example(x, compute_hessian=True):

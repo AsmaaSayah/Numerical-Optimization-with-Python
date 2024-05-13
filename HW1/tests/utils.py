@@ -9,7 +9,7 @@ def draw_results(ax, results, color, marker, label):
         ax.plot(results[2][:, 0], results[2][:, 1], results[3], c=color)
 
 
-def plot_contour(obj_func, func_name, results_gd, results_newton):
+def plot_contour(obj_func, func_name):
     # Color and marker modifications
     colors = ['crimson', 'seagreen', 'royalblue', 'purple']
     markers = ['o', 'v', '^', '<']
