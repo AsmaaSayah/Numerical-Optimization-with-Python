@@ -59,64 +59,6 @@ def wolfe_backtrack(func_to_minimize, current_position, step_direction):
     return step_length, condition_met
 
 
-
-def wolfe_backtracking_condition(func_to_minimize, current_position, step_direction):
-    """
-    This function implements the Wolfe backtracking condition.
-
-    Parameters:
-    - func_to_minimize: The objective function to be minimized.
-    - current_position: The current location in the function space.
-    - step_direction: The direction of the step.
-
-    Returns:
-    - step_length: The length of the step.
-    - condition_met: Whether the condition has been met.
-
-    """
-    # Initialization
-    # Ensure 0 < c1 < c2 < 1
-    step_length = 1.0
-    wolfe_c1 = 0.0001
-    step_length_scaling_factor = 0.25
-    compute_hessian = False
-    max_iterations = 1000
-    condition_met = True
-
-    # Compute function value and gradient at current position
-    current_direction = step_direction
-    func_value_current, grad_current, _ = func_to_minimize(current_position, compute_hessian)
-    projected_grad_step = np.dot(grad_current, current_direction)
-
-    # Compute function value and gradient at next position
-    next_position = current_position - step_length * current_direction
-    func_value_next, grad_next, _ = func_to_minimize(next_position, compute_hessian)
-
-    # Wolfe condition thresholds
-    grad_proj_step_diff = step_length * wolfe_c1 * projected_grad_step
-
-    iteration_counter = 0
-    while ((func_value_next > func_value_current - grad_proj_step_diff) and
-           (iteration_counter <= max_iterations)):
-        # Update iteration counter and step length
-        iteration_counter += 1
-        step_length *= step_length_scaling_factor
-
-        # Compute function value and gradient at new next position
-        next_position = current_position - step_length * current_direction
-        func_value_next, grad_next, _ = func_to_minimize(next_position, compute_hessian)
-
-        grad_proj_step_diff = step_length * wolfe_c1 * projected_grad_step
-
-    print(" Backtrack: step_length = {}, func_value_current = {}, func_value_next = {}, grad_proj_step_diff = {} :"
-          .format(step_length, func_value_current, func_value_next, grad_proj_step_diff))
-
-    if iteration_counter > max_iterations:
-        condition_met = False
-
-    return step_length, condition_met
-
-
 def gradient_descent(func_to_minimize, initial_position, max_iterations, tolerance_objective,
                               tolerance_parameters):
     """
@@ -178,7 +120,7 @@ def gradient_descent(func_to_minimize, initial_position, max_iterations, toleran
 
         # Compute step length using Wolfe backtracking condition
         step_direction = gradient
-        step_length, step_length_condition_met = wolfe_backtracking_condition(func_to_minimize, current_position,
+        step_length, step_length_condition_met = wolfe_backtrack(func_to_minimize, current_position,
                                                                               step_direction)
 
         if not step_length_condition_met:
