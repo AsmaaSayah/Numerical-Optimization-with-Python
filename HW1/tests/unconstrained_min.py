@@ -78,7 +78,6 @@ def wolfe_backtracking_condition(func_to_minimize, current_position, step_direct
     # Ensure 0 < c1 < c2 < 1
     step_length = 1.0
     wolfe_c1 = 0.0001
-    wolfe_c2 = 0.9  # Not needed in this case
     step_length_scaling_factor = 0.25
     compute_hessian = False
     max_iterations = 1000
