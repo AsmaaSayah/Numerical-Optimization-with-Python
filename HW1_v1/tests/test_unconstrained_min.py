@@ -1,8 +1,14 @@
 import unittest
 import numpy as np
+import sys
+sys.path.append('/workspaces/Numerical-Optimization-with-Python/')
+print('OK')
+
 from HW1_v1.src.unconstrained_min import UnconstrainedMinimizer
 from HW1_v1.src.utils import plot_contour, plot_function_values
-from HW1_v1.tests.examples import quadratic_example, rosenbrock_example, linear_example, triangle_example
+from HW1_v1.tests.examples import quadratic_example,  rosenbrock_example, linear_example,smoothed_corner_triangles
+
+print('OK')
 
 class TestUnconstrainedMin(unittest.TestCase):
     def setUp(self):
@@ -11,7 +17,7 @@ class TestUnconstrainedMin(unittest.TestCase):
             "quadratic": quadratic_example,
             "rosenbrock": rosenbrock_example,
             "linear": linear_example,
-            "triangle": triangle_example
+            "triangle": smoothed_corner_triangles
         }
 
     def test_minimization(self):
