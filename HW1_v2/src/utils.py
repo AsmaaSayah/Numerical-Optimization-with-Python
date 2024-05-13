@@ -44,4 +44,7 @@ def plot_contour(obj_func, func_name, results_gd, results_newton):
 
 
 
+
+
+
 print("ok")

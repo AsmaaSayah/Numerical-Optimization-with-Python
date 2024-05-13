@@ -3,7 +3,7 @@ import unittest
 import sys
 sys.path.append('/workspaces/Numerical-Optimization-with-Python/')
 from HW1_v2.src.unconstrained_min import unconstrained_minimization
-from HW1_v2.src.utils import plot_contour
+from HW1_v2.src.utils import plot_contour, plot_function_values
 from HW1_v2.tests.examples import (
     example_func_quad_1,
     example_func_quad_2,
@@ -14,7 +14,6 @@ from HW1_v2.tests.examples import (
 )
 
 # test params
-max_iter = 1000
 step_tol = 1e-8
 obj_tol = 1e-12
 
@@ -39,7 +38,12 @@ class TestUnconstrainedMin(unittest.TestCase):
 
             methods = ['gd', 'newton']
             results = {}
-            x0 = np.array([8, 6], dtype=np.float64)
+            if function_index == 4:
+                x0 = np.array([-1, 2], dtype=np.float64)  # For Rosenbrock example
+                max_iter = 10000  # For Gradient Descent with Rosenbrock example
+            else:
+                x0 = np.array([1, 1], dtype=np.float64)
+                max_iter = 100
 
             for method in methods:
                 if function_index == 5 and method != 'gd':
@@ -49,9 +53,8 @@ class TestUnconstrainedMin(unittest.TestCase):
 
                 # You may want to perform assertions on the results here
 
-            # Plot all methods tracks on top of the contour
+            # Plot contour lines with iteration paths
             plot_contour(func2min, func_name, *results.values())
-
             print(f'End of {func_name} analysis')
 
 
