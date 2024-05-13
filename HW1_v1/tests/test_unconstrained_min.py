@@ -48,7 +48,7 @@ class TestUnconstrainedMin(unittest.TestCase):
                 print(f"{method} method converged to {x_opt} with objective value {f_opt}")
 
                 # Plot contour lines with iteration paths
-                plot_contour(example_func, xlims=(-2, 2), ylims=(-2, 2), paths=minimizer.iteration_paths, labels=[method])
+                plot_contour(example_func, paths=minimizer.iteration_paths, labels=[method])
 
                 # Plot function values vs. iteration number
                 plot_function_values(minimizer.function_values)
