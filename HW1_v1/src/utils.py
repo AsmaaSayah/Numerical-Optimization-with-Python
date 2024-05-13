@@ -3,6 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def plot_contour(obj_func, xlims, ylims, path=None, labels=None):
     """
     Plot contour lines of the objective function.
@@ -14,6 +15,7 @@ def plot_contour(obj_func, xlims, ylims, path=None, labels=None):
     - path: Path of iterations (optional).
     - labels: Labels for the paths (optional).
     """
+    print("OK_plot")
     x = np.linspace(xlims[0], xlims[1], 100)
     y = np.linspace(ylims[0], ylims[1], 100)
     X, Y = np.meshgrid(x, y)
@@ -35,6 +37,8 @@ def plot_function_values(iter_values):
     Parameters:
     - iter_values: Dictionary containing function values for each method.
     """
+    print("OK_plot")
+
     for label, values in iter_values.items():
         plt.plot(range(len(values)), values, label=label)
     plt.xlabel('Iteration')

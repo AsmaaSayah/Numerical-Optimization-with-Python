@@ -21,10 +21,12 @@ class TestUnconstrainedMin(unittest.TestCase):
         }
 
     def test_minimization(self):
+        print("OK_test1")
         for example_name, example_func in self.examples.items():
             print(f"Running tests for {example_name} example...")
             for method in ['gradient_descent', 'newton']:
                 minimizer = UnconstrainedMinimizer(method=method)
+                print("OK")
                 x_opt, f_opt, success = minimizer.minimize(example_func, x0=[1, 1])
                 self.assertTrue(success)
                 print(f"{method} method converged to {x_opt} with objective value {f_opt}")
@@ -38,4 +40,5 @@ class TestUnconstrainedMin(unittest.TestCase):
                 print()
 
 if __name__ == "__main__":
+    print("ok")
     unittest.main()

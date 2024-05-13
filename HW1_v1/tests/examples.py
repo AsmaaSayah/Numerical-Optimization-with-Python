@@ -15,6 +15,7 @@ def quadratic_example(x, compute_hessian=True, example_num=1):
     f = np.dot(x.T, Q).dot(x)
     g = 2 * Q.dot(x)
     h = 2 * Q if compute_hessian else None
+    print(f)
     return f, g, h
 
 def rosenbrock_example(x, compute_hessian=True):

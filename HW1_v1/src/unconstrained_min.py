@@ -17,6 +17,7 @@ class UnconstrainedMinimizer:
         - c2: Wolfe condition parameter for curvature.
         - step_scaling_factor: Scaling factor for step length.
         """
+        print("OK_unconstrained_min")
         self.method = method
         self.alpha = alpha
         self.tol = tol
@@ -84,6 +85,7 @@ class UnconstrainedMinimizer:
         Returns:
         - x: Optimal solution.
         """
+        print("OK_unconstrained_min")
         if self.method == 'gradient_descent':
             return self.gradient_descent(func, grad, x0)
         elif self.method == 'newton':
