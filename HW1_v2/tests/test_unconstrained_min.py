@@ -3,7 +3,7 @@ import unittest
 import sys
 sys.path.append('/workspaces/Numerical-Optimization-with-Python/')
 from HW1_v2.src.unconstrained_min import unconstrained_minimization
-from HW1_v2.src.utils import plot_contour, plot_function_values
+from HW1_v2.src.utils import plot_contour,plot_function_values
 from HW1_v2.tests.examples import (
     example_func_quad_1,
     example_func_quad_2,
@@ -21,12 +21,12 @@ class TestUnconstrainedMin(unittest.TestCase):
     def setUp(self):
         # Create function dictionary
         self.func_dict = {
-            1: ('circle', example_func_quad_1),
-            2: ('ellipse', example_func_quad_2),
-            3: ('shifted ellipse', example_func_quad_3),
+            1: ('circle (contour lines are circles)', example_func_quad_1),
+            2: ('ellipse (contour lines are axis aligned ellipses)', example_func_quad_2),
+            3: ('shifted ellipse (contour lines are rotated ellipses)', example_func_quad_3),
             4: ('Rosenbrock', example_func_rosenbrock),
             5: ('linear', example_func_linear),
-            6: ('nonquad', example_func_nonquad)
+            6: ('nonquad (smoothed corner triangles)', example_func_nonquad)
         }
 
     def tearDown(self):
@@ -52,9 +52,11 @@ class TestUnconstrainedMin(unittest.TestCase):
                     results[method] = unconstrained_minimization(func2min, x0, max_iter, obj_tol, step_tol, method)
 
                 # You may want to perform assertions on the results here
-
+            print(func_name)
             # Plot contour lines with iteration paths
             plot_contour(func2min, func_name, *results.values())
+            plot_function_values(func_name, *results.values())
+
             print(f'End of {func_name} analysis')
 
 

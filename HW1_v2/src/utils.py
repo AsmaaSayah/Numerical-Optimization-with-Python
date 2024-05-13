@@ -43,6 +43,35 @@ def plot_contour(obj_func, func_name, results_gd, results_newton):
     plt.show()
 
 
+def plot_function_values(func_name, results_gd, results_newton):
+    if func_name != 'linear': 
+        results_gd_tmp = results_gd[2][:, 1]
+        results_newton_tmp = results_newton[2][:, 1]
+        plt.figure(figsize=(10, 6))
+        
+        # Plotting function values vs. iteration number for Gradient Descent
+        plt.plot(range(len(results_gd_tmp)), results_gd_tmp, label='Gradient Descent')
+        
+        # Plotting function values vs. iteration number for Newton's method
+        plt.plot(range(len(results_newton_tmp)), results_newton_tmp, label="Newton's Method")
+        
+        plt.xlabel('Iteration')
+        plt.ylabel('Function Value')
+        plt.title(f'Function Values vs. Iteration Number for {func_name}')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+    else:
+        results_gd_tmp = results_gd[2][:, 1]
+        plt.figure(figsize=(10, 6))
+        # Plotting function values vs. iteration number for Gradient Descent
+        plt.plot(range(len(results_gd_tmp)), results_gd_tmp, label='Gradient Descent')
+        plt.xlabel('Iteration')
+        plt.ylabel('Function Value')
+        plt.title(f'Function Values vs. Iteration Number for {func_name}')
+        plt.legend()
+        plt.grid(True)
+        plt.show()  
 
 
 
