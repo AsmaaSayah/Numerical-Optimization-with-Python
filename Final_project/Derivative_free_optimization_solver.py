@@ -86,6 +86,8 @@ def compute_rho(f, xk, pk, mk, f_values, coefs):
     return actual_reduction / predicted_reduction if predicted_reduction != 0 else 0
 
 def geometry_improving_procedure(Y):
+    ### This will help us ensure that the points are well-spaced and provide sufficient coverage of the search space.
+    
     """
     Improve the geometry of the interpolation set.
     
@@ -114,69 +116,6 @@ def condition_to_check_Y(Y):
     distances = [np.linalg.norm(Y[i] - Y[j]) for i in range(n) for j in range(i + 1, n)]
     return np.min(distances) < 1e-3
 
-def plot_iteration(Y, xk, xk_plus, delta, k, f):
-    """
-    Plot the current iteration, including the function, interpolation points, and trust region.
-    
-    Parameters:
-    Y (list of np.ndarray): Current interpolation set.
-    xk (np.ndarray): Current point.
-    xk_plus (np.ndarray): Trial point.
-    delta (float): Trust region radius.
-    k (int): Current iteration number.
-    f (function): Objective function.
-    """
-    fig = plt.figure(figsize=(12, 6))
-    
-    # 3D plot
-    ax = fig.add_subplot(121, projection='3d')
-    x1_range = np.linspace(-2, 3, 100)
-    x2_range = np.linspace(-2, 4, 100)
-    X1, X2 = np.meshgrid(x1_range, x2_range)
-    Z = np.array([[f([x1, x2]) for x1 in x1_range] for x2 in x2_range])
-    ax.plot_surface(X1, X2, Z, cmap='viridis', alpha=0.6)
-    
-    Y_array = np.array(Y)
-    ax.scatter(Y_array[:, 0], Y_array[:, 1], [f(y) for y in Y], c='blue', label='Interpolation Points')
-    ax.scatter(*xk, f(xk), c='red', label='Current Point', marker='x')
-    ax.scatter(*xk_plus, f(xk_plus), c='green', label='Trial Point', marker='+')
-    
-    u = np.linspace(0, 2 * np.pi, 100)
-    v = np.linspace(0, np.pi, 100)
-    x_sphere = delta * np.outer(np.cos(u), np.sin(v)) + xk[0]
-    y_sphere = delta * np.outer(np.sin(u), np.sin(v)) + xk[1]
-    z_sphere = delta * np.outer(np.ones(np.size(u)), np.cos(v)) + f(xk)
-    ax.plot_surface(x_sphere, y_sphere, z_sphere, color='gray', alpha=0.2)
-
-    ax.set_title(f"Iteration {k} (3D)")
-    ax.set_xlabel("x1")
-    ax.set_ylabel("x2")
-    ax.set_zlabel("f(x)")
-    ax.legend()
-    
-    # 2D contour plot
-    plt.figure(figsize=(6, 6))
-    print(1)
-    x1_range = np.linspace(-2, 3, 400)
-    x2_range = np.linspace(-2, 4, 400)
-    X1, X2 = np.meshgrid(x1_range, x2_range)
-    Z = np.array([[f([x1, x2]) for x1 in x1_range] for x2 in x2_range])
-    plt.contour(X1, X2, Z, levels=50, cmap='viridis')
-    
-    plt.scatter(*zip(*Y), c='blue', label='Interpolation Points')
-    plt.scatter(*xk, c='red', label='Current Point', marker='x')
-    plt.scatter(*xk_plus, c='green', label='Trial Point', marker='+')
-    circle = plt.Circle(xk, delta, color='gray', alpha=0.2, label='Trust Region')
-    plt.gca().add_patch(circle)
-    plt.title(f"Iteration {k} (2D)")
-    plt.xlabel("x1")
-    plt.ylabel("x2")
-    plt.legend()
-    plt.xlim(-2, 3)
-    plt.ylim(-2, 4)
-    plt.grid(True)
-    
-    plt.show()
 
 def derivative_free_optimization(f, Y, delta0, eta, max_iter=100,improvement_threshold=1e-6):
     """
@@ -188,14 +127,16 @@ def derivative_free_optimization(f, Y, delta0, eta, max_iter=100,improvement_thr
     delta0 (float): Initial trust region radius.
     eta (float): Constant for the acceptance criterion.
     max_iter (int): Maximum number of iterations.
+    improvement_threshold: Minimum improvement threshold for stopping.
     
     Returns:
     np.ndarray: Optimal point found by the algorithm.
     """
-    xk = min(Y, key=f)
+    xk = min(Y, key=f) #Current point, chosen as the point in Y with the minimum function value.
+
     delta = delta0
     k = 0
-    f_values = np.array([f(y) for y in Y])
+    f_values = np.array([f(y) for y in Y]) #Function values at the interpolation points.
     prev_f_value = np.inf
     start_time = time.time()
 
@@ -251,5 +192,69 @@ def derivative_free_optimization(f, Y, delta0, eta, max_iter=100,improvement_thr
     running_time = end_time - start_time
     
     return xk, running_time
+
+
+def plot_iteration(Y, xk, xk_plus, delta, k, f):
+    """
+    Plot the current iteration, including the function, interpolation points, and trust region.
+    
+    Parameters:
+    Y (list of np.ndarray): Current interpolation set.
+    xk (np.ndarray): Current point.
+    xk_plus (np.ndarray): Trial point.
+    delta (float): Trust region radius.
+    k (int): Current iteration number.
+    f (function): Objective function.
+    """
+    fig = plt.figure(figsize=(12, 6))
+    
+    # 3D plot
+    ax = fig.add_subplot(121, projection='3d')
+    x1_range = np.linspace(-2, 3, 100)
+    x2_range = np.linspace(-2, 4, 100)
+    X1, X2 = np.meshgrid(x1_range, x2_range)
+    Z = np.array([[f([x1, x2]) for x1 in x1_range] for x2 in x2_range])
+    ax.plot_surface(X1, X2, Z, cmap='viridis', alpha=0.6)
+    
+    Y_array = np.array(Y)
+    ax.scatter(Y_array[:, 0], Y_array[:, 1], [f(y) for y in Y], c='blue', label='Interpolation Points')
+    ax.scatter(*xk, f(xk), c='red', label='Current Point', marker='x')
+    ax.scatter(*xk_plus, f(xk_plus), c='green', label='Trial Point', marker='+')
+    
+    u = np.linspace(0, 2 * np.pi, 100)
+    v = np.linspace(0, np.pi, 100)
+    x_sphere = delta * np.outer(np.cos(u), np.sin(v)) + xk[0]
+    y_sphere = delta * np.outer(np.sin(u), np.sin(v)) + xk[1]
+    z_sphere = delta * np.outer(np.ones(np.size(u)), np.cos(v)) + f(xk)
+    ax.plot_surface(x_sphere, y_sphere, z_sphere, color='gray', alpha=0.2)
+
+    ax.set_title(f"Iteration {k} (3D)")
+    ax.set_xlabel("x1")
+    ax.set_ylabel("x2")
+    ax.set_zlabel("f(x)")
+    ax.legend()
+    
+    # 2D contour plot
+    plt.figure(figsize=(6, 6))
+    x1_range = np.linspace(-2, 3, 400)
+    x2_range = np.linspace(-2, 4, 400)
+    X1, X2 = np.meshgrid(x1_range, x2_range)
+    Z = np.array([[f([x1, x2]) for x1 in x1_range] for x2 in x2_range])
+    plt.contour(X1, X2, Z, levels=50, cmap='viridis')
+    
+    plt.scatter(*zip(*Y), c='blue', label='Interpolation Points')
+    plt.scatter(*xk, c='red', label='Current Point', marker='x')
+    plt.scatter(*xk_plus, c='green', label='Trial Point', marker='+')
+    circle = plt.Circle(xk, delta, color='gray', alpha=0.2, label='Trust Region')
+    plt.gca().add_patch(circle)
+    plt.title(f"Iteration {k} (2D)")
+    plt.xlabel("x1")
+    plt.ylabel("x2")
+    plt.legend()
+    plt.xlim(-2, 3)
+    plt.ylim(-2, 4)
+    plt.grid(True)
+    
+    plt.show()
 
 
