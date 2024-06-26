@@ -1,42 +1,48 @@
-import numpy as np
 import unittest
+import numpy as np
+from matplotlib import pyplot as plt
 import sys
 sys.path.append('/workspaces/Numerical-Optimization-with-Python/')
-from HW1_v2.src.constrained_min import interior_pt
-from HW1_v2.src.utils import plot_results_linear, plot_results_quadratic
-from examples import test_qp, test_lp
+from HW1_v2.src.constrained_min import LogBarrier
+from examples import *
+from HW1_v2.src.utils import *
 
-class TestConstrainedMinimization(unittest.TestCase):
-    def test_quadratic_function(self):
-        func_name = 'quadratic'
-        backtrack_flag = True
-        func_min = test_qp
-        start_x = np.array([0.1, 0.2, 0.7], dtype=np.float64)
-        newton_outcome = interior_pt(func_min, start_x, backtrack=backtrack_flag, m=4, t=1.0, miu=10, eps_barrier=1e-5,
-                                     eps_newton=1e-5)
 
-        # Plot results
-        x_trajectory = newton_outcome[2]
-        f_trajectory = newton_outcome[3]
-        x_limits = np.array([-2, 2])
-        y_limits = np.array([-2, 2])
-        z_limits = np.array([-2, 2])
-        plot_results_quadratic(func_min, x_trajectory, f_trajectory, x_limits, y_limits, z_limits, func_name)
+class TestConstrainedMin(unittest.TestCase):
+    def run_check(self, test_name, func, ineq_constraints, eq_constraints_mat, eq_constraints_rhs, x0):
+        log_barrier = LogBarrier(func, ineq_constraints, eq_constraints_mat, eq_constraints_rhs, x0)
+        solution, path, objectives = log_barrier.interior_pt(test_name)
 
-    def test_linear_function(self):
-        func_name = 'linear'
-        backtrack_flag = False
-        func_min = test_lp
-        start_x = np.array([0.5, 0.75], dtype=np.float64)
-        newton_outcome = interior_pt(func_min, start_x, backtrack=backtrack_flag, m=4, t=1.0, miu=10, eps_barrier=1e-5,
-                                     eps_newton=1e-5)
+        final_objective = func(solution)
+        final_constraints = [constr(solution) for constr in ineq_constraints]
 
-        # Plot results
-        x_trajectory = newton_outcome[2]
-        f_trajectory = newton_outcome[3]
-        x_limits = np.array([-1, 3])
-        y_limits = np.array([-1, 3])
-        plot_results_linear(func_min, x_trajectory, f_trajectory, x_limits, y_limits, func_name)
+        # The final candidate
+        print(f"The end point is = {solution}")
+        # Objective and constraint values at the final candidate
+        print(f"The final objective value is = {final_objective}")
+        print(f"The final constraint values are = {final_constraints}")
+        # Plot the feasible region and the path taken by the algorithm.
+        plot_path(np.array(path))
+        # Plot the objective value vs. outer iteration number
+        plot_obj_vs_iter(objectives)
+        plot_feasible_region_3d(path)
+        plot_path_3d(path)
+        #plot_feasible_region_2d()
+        #plot_path_2d(path)
 
-if __name__ == '__main__':
+    def test_qp(self):
+        quadratic, ineq_constraints, eq_constraints_mat, eq_constraints_rhs, x0 = example_quadratic()
+        self.run_check('qp', quadratic, ineq_constraints, eq_constraints_mat, eq_constraints_rhs, x0)
+        
+### Run each test seperatly:
+
+    #def test_lp(self):
+    #    linear, ineq_constraints, eq_constraints_mat, eq_constraints_rhs, x0 = example_linear()
+    #    self.run_check('lp', linear, ineq_constraints, eq_constraints_mat, eq_constraints_rhs, x0)
+
+
+if __name__ == "__main__":
     unittest.main()
+
+
+

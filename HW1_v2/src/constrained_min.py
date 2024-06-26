@@ -1,138 +1,139 @@
 import numpy as np
+from scipy.optimize import minimize
+from autograd import grad
+from autograd import hessian
+import autograd.numpy as anp
+
+t = 1
 
 
-def wolfe_backtrack(func2min, xi, step_direct, t, max_iter=100):
-    """
-    Wolfe backtracking condition.
+class LogBarrier:
+    def __init__(self,
+                 func,
+                 ineq_constraints,
+                 eq_constraints_mat,
+                 eq_constraints_rhs,
+                 x0):
+        self.func = func
+        self.ineq_constraints = ineq_constraints
+        self.eq_constraints_mat = eq_constraints_mat
+        self.eq_constraints_rhs = eq_constraints_rhs
+        self.x0 = x0
 
-    Input:
-    - func2min: objective function to minimize
-    - x: current position.
-    - p: step direction
+    def line_search(self, func, grad, xk, pk, c1=0.01, alpha_init=1.0):
+        alpha = alpha_init
+        while True:
+            func_xk = func(xk)
+            func_xk_alpha_pk = func(xk + alpha * pk)
+            grad_xk_dot_pk = np.dot(grad.T, pk)
 
-    Output:
-    - alpha: i.e., step length
-
-    """
-    # Init
-    alpha = 1.0
-    c_wolfe_1 = 1e-3
-    alpha_factor = 0.5
-    p = step_direct
-    alpha_ok = False
-
-    # current position f(x) & g(x)
-    func_x, grad_x, h_NA = func2min(xi, t)
-    # <g(x),p>
-    grad_proj_step = np.dot(grad_x, p)
-
-    for i in range(max_iter):
-        # Evaluate next position f(x+ap)
-        x_next = xi + alpha * p
-        func_x_next, g_NA, h_NA = func2min(x_next, t)
-
-        # Check the sufficient decrease condition (i.e., Wolfe #1)
-        if func_x_next < func_x + alpha*c_wolfe_1*grad_proj_step:
-            alpha_ok = True
-            return alpha, alpha_ok
-
-        # Modify alpha and re-check for a better fit of the step length
-        alpha *= alpha_factor
-
-    return alpha, alpha_ok
-
-
-def interior_pt(func2min, x0, m, t, miu=10, eps_barrier=1e-5, eps_newton=1e-5, max_iter=1000, backtrack=False):
-
-    """
-    Barrier method algorithm.
-
-    Input:
-    - func2min: objective function to minimize
-    - x0: initial position.
-    - m: number of constraints
-    - t: user's parameter
-    - miu: t slope
-    - eps_barrier: barrier stop criteria
-    - eps_newton: newton step stop criteria
-    - max_iter: inner loop max number of iterations
-
-    Output: track records
-    - x_track, f_track & barrier_factor
-
-    """
-
-    xi = np.copy(x0)  # store initial value
-    # Init path records
-    dim_x = len(xi)
-    x_track = np.array(np.zeros((max_iter, dim_x)), dtype=np.float64)
-    f_track = np.array(np.zeros(max_iter), dtype=np.float64)
-
-    #x_track = []  # keep track on x
-    #f_track = []  # keep track on f(x)
-    outer_iter = 0  # number of iterations of outer loop
-
-    # loop until stopping criterion is met
-    while m/t > eps_barrier:
-        # Get f(x), g(x) & H(x)
-        func_x, grad_x, hessian_x = func2min(xi, t)
-
-        # find Newton direction using equation solver:
-        newton_step = -np.linalg.solve(hessian_x, grad_x)
-
-        # Keep initial positions
-        if outer_iter == 0:
-            # append to track records
-            x_track[outer_iter, :] = xi
-            f_track[outer_iter] = func_x
-            print('Barrier init: x = {}, f(x) = {}, m/t = {}'.format(xi, func_x, m / t))
-
-        # centering step: Newton Algorithm
-        inner_iter = 0
-
-        while inner_iter < max_iter:
-            prev_func_x = np.copy(func_x)
-
-            # find step length using wolfe backtrack condition
-            if backtrack == False:
-                alpha, alpha_ok = 0.05, True
+            if func_xk_alpha_pk > func_xk + c1 * alpha * grad_xk_dot_pk:
+                alpha *= 0.5
             else:
-                alpha, alpha_ok = wolfe_backtrack(func2min, xi, newton_step, t)
+                return alpha
 
-            if alpha_ok == False:
-                break
+    def phi(self, x):
+        phi_value = 0
+        for constraint in self.ineq_constraints:
+            if -constraint(x) <= 0:  # if the constraint is violated
+                print("ERROR negative log")
+                return np.inf  # returning a large value indicating infeasible solution
+            else:
+                phi_value -= anp.log(-constraint(x))  # accumulate the log barrier for each constraint
+        return phi_value
 
-            # take 1 step towards opposite of current gradient
-            xi += alpha * newton_step
+    def interior_pt(self, test_name, mu=10, eps=1e-5, max_iter=1000):
+        global t
+        n = len(self.x0)
+        m = len(self.ineq_constraints)
 
-            # set the next step direction
-            func_x, grad_x, hessian_x = func2min(xi, t)
+        def objective(x):
+            return t * self.func(x) + self.phi(x)
 
-            df = prev_func_x - func_x
-            if df <= eps_newton:
-                #print("Newton termination: small df =", df)
-                break
+        path = []
+        objectives = []
 
-            newton_step = -np.linalg.solve(hessian_x, grad_x)
+        fs = [self.func(self.x0)]
 
-            inner_iter += 1
+        x = self.x0
+        k = 0
+        while m / t > eps:
+            path.append(np.copy(x))
+            objectives.append(objective(x))
 
-        # print result
-        print('Barrier iteration #{}: x = {}, f(x) = {}, m/t = {}'.format(outer_iter, xi, func_x, m/t))
+            print(f'Iteration: {k} \t x = {x}, f(x) = {fs[k]:.4f}, gap = {m / t:.4f}')
 
-        # update parameter t
-        t *= miu
-        # Increment outer loop iteration
-        outer_iter += 1
+            i = 0
+            p_nt = np.array([[1], [1]])  # Initialize to any non-zero value
+            while np.linalg.norm(p_nt) > eps and i < max_iter:
+                grad_func, grad_phi, gx_func, gx_phi, gx = self.gradient(x)
+                hessian_func, hessian_phi, hx_func, hx_phi, hx = self.hessian(x)
 
-        # append to track records
-        x_track[outer_iter, :] = xi
-        f_track[outer_iter] = func_x
+                p_nt = self.newton_step(hx, gx)
 
-    # Output results
-    x_track = x_track[:(outer_iter+1), :]
-    f_track = f_track[:(outer_iter+1)]
-    final_x = xi
-    final_fx = func_x
+                alpha = self.line_search(objective, gx, x, p_nt)
+                x = x + alpha * p_nt
 
-    return final_x, final_fx, x_track, f_track
+                i += 1
+                print(f'    Iteration2: {i} \t x = {x}, p_nt={p_nt}, np.linalg.norm(p_nt) > eps={np.linalg.norm(p_nt) > eps}')
+
+            fs.append(self.func(x))
+            k += 1
+            t *= mu
+
+        return x, path, objectives
+
+    def newton_step(self, H, g, reg_term=1e-6):
+        A = self.eq_constraints_mat
+        b = self.eq_constraints_rhs
+        # The shape of H, which is the Hessian matrix
+        n = H.shape[0]
+
+        # Regularize the Hessian to avoid singularity
+        H += np.eye(n) * reg_term
+
+        # If there are no equality constraints, solve the system of equations to find d
+        if A is None:
+            p_nt = np.linalg.solve(H, -g)
+            return p_nt
+        else:
+            # If there are equality constraints, construct the KKT system
+            m = A.shape[0]  # Number of constraints
+            # Reshaping A for proper concatenation
+            A = np.reshape(A, (1, -1))
+            AT = np.reshape(A.T, (-1, 1))
+
+            # Zero matrix and zero vector
+            zeros_m_m = np.zeros((len(b),len(b)))
+            zeros_m = np.zeros((len(b),len(b)))
+
+            KKT_mat = np.vstack([np.hstack((H, AT)), np.hstack((A, zeros_m_m))])
+            KKT_rhs = np.hstack((np.squeeze(-g), zeros_m.flatten()))
+
+
+            # Solve the KKT system
+            sol = np.linalg.solve(KKT_mat, KKT_rhs)
+
+            # The solution includes the step direction 'd' and the Lagrange multipliers 'lambda_'
+            p_nt = sol[:n]
+            lambda_ = sol[n:]
+
+            return p_nt
+
+    def gradient(self, x):
+        grad_func = grad(self.func)
+        grad_phi = grad(self.phi)
+        gx_func = t * grad_func(x)
+        gx_phi = grad_phi(x)
+        gx = gx_func + gx_phi
+        print(gx)
+        return grad_func, grad_phi, gx_func, gx_phi, gx
+
+    def hessian(self, x):
+        hessian_func = hessian(self.func)
+        hessian_phi = hessian(self.phi)
+        hx_func = t * hessian_func(x)
+        hx_phi = hessian_phi(x)
+        hx = hx_func + hx_phi
+
+        return hessian_func, hessian_phi, hx_func, hx_phi, hx

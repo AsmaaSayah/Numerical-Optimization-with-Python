@@ -1,139 +1,111 @@
 #utils.py
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 
 ############ HW2
 
-def plot_linear_feasible_set(x_values, y_values):
-    constraint1 = lambda x, y: - x - y + 1
-    constraint2 = lambda x, y: y - 1
-    constraint3 = lambda x, y: x - 2
-    constraint4 = lambda x, y: -y
-
-    constraints = (constraint1(x_values, y_values) <= 0) & \
-                  (constraint2(x_values, y_values) <= 0) & \
-                  (constraint3(x_values, y_values) <= 0) & \
-                  (constraint4(x_values, y_values) <= 0)
-
-    plt.imshow(
-        constraints.astype(int),
-        extent=(x_values.min(), x_values.max(), y_values.min(), y_values.max()),
-        origin='lower',
-        cmap='viridis'
-    )
-
-
-def plot_linear_contour(objective_function, limits_x, limits_y):
-
-    # Create a meshgrid covering the relevant area
-    x_range = np.linspace(limits_x[0], limits_x[1], 100)
-    y_range = np.linspace(limits_y[0], limits_y[1], 100)
-    grid_x, grid_y = np.meshgrid(x_range, y_range)
-    rows, cols = grid_x.shape
-    function_values = np.zeros((rows, cols), dtype=np.float64)
-
-    # Calculate the function values for each point in the meshgrid
-    for row in range(rows):
-        for col in range(cols):
-            input_values = np.array([grid_x[row, col], grid_y[row, col]], dtype=np.float64)
-            function_value, _, _ = objective_function(input_values, t=0)
-            function_values[row, col] = function_value
-
-    # Create the contour plot
-    contour = plt.contour(x_range, y_range, function_values)
-    plt.clabel(contour, fmt='%1.2f')
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.title('Constrains contours and path')
+# Plot the path taken by the algorith
+def plot_path(path):
+    path = np.array(path)
+    plt.figure()
+    plt.plot(path[:, 0], path[:, 1], 'o-')
+    plt.title('Path taken by the algorithm')
     plt.show()
 
 
-def plot_learning_curve(function_values, function_name):
+# Plot the objective value vs. outer iteration number
+def plot_obj_vs_iter(objectives):
+    plt.figure()
+    plt.plot(objectives)
+    plt.title('Objective value vs. iteration number')
+    plt.xlabel('Iteration number')
+    plt.ylabel('Objective value')
+    plt.show()
 
+
+def plot_path_3d(path):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    path = np.array(path)
+    ax.plot(path[:, 0], path[:, 1], path[:, 2], 'o-', label='Path')
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    ax.legend()
+    plt.show()
+
+def plot_path_2d(path):
     fig, ax = plt.subplots()
-    ax.plot(range(len(function_values)), function_values, color='b')
-    ax.scatter(len(function_values) - 1, function_values[-1], color='r')
-    ax.set_title('Log-barrier method for $f(x) = f$({})'.format(function_name))
-    ax.set_xlabel('Nu of outer iterations')
-    ax.set_ylabel('Function value ($f(x)$)')
+    path = np.array(path)
+    ax.plot(path[:, 0], path[:, 1], 'o-', label='Path')
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.legend()
     plt.show()
 
+def plot_feasible_region_3d(path=None):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    x = np.linspace(0, 1, 10)
+    y = np.linspace(0, 1, 10)
+    X, Y = np.meshgrid(x, y)
+    Z = 1 - X - Y
+    Z = np.maximum(Z, 0)
+    
+    # Plot the surface
+    ax.plot_surface(X, Y, Z, alpha=0.5, color='gray', label='Feasible Region')
+    
+    # Plot the path if provided
+    if path is not None:
+        path = np.array(path)
+        ax.plot(path[:, 0], path[:, 1], path[:, 2], 'o-', label='Path')
+    
+    # Add legends and labels
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    ax.legend()
+    
+    # Customize legend if needed
+    # ax.legend(['Feasible Region', 'Path'])
 
-def plot_results_linear(minimization_function, track_x, track_f, limits_x, limits_y, function_name):
-
-    fig, ax = plt.subplots(figsize=(10, 10))
-    ax.plot(track_x[:, 0], track_x[:, 1], 'b')
-    ax.scatter(track_x[-1][0], track_x[-1][1], color='r')
-
-    x_range = np.linspace(limits_x[0], limits_x[1], 200)
-    y_range = np.linspace(limits_y[0], limits_y[1], 200)
-    grid_x, grid_y = np.meshgrid(x_range, y_range)
-
-    plot_linear_feasible_set(grid_x, grid_y)
-    plot_linear_contour(minimization_function, limits_x, limits_y)
-    plot_learning_curve(track_f, function_name)
-
-
-def plot_quadratic_feasible_set(x_values, y_values):
-
-    constraint1 = lambda x, y: - x
-    constraint2 = lambda x, y: - y
-
-    constraints = (constraint1(x_values, y_values) <= 0) & \
-                  (constraint2(x_values, y_values) <= 0)
-
-    plt.imshow(
-        constraints.astype(int),
-        extent=(x_values.min(), x_values.max(), y_values.min(), y_values.max()),
-        origin='lower',
-        cmap='viridis'
-
-    )
-
-
-def plot_quadratic_contour(objective_function, limits_x, limits_y, limits_z):
-
-    # Create a meshgrid covering the relevant area
-    x_range = np.linspace(limits_x[0], limits_x[1], 100)
-    y_range = np.linspace(limits_y[0], limits_y[1], 100)
-    z_range = np.linspace(limits_z[0], limits_z[1], 100)
-    grid_x, grid_y, grid_z = np.meshgrid(x_range, y_range, z_range)
-    x_dim, y_dim, z_dim = grid_x.shape
-    function_values = np.zeros((x_dim, y_dim, z_dim), dtype=np.float64)
-
-    # Calculate the function values for each point in the meshgrid
-    for x in range(x_dim):
-        for y in range(y_dim):
-            for z in range(z_dim):
-                input_values = np.array([grid_x[x, y, z], grid_y[x, y, z], grid_z[x, y, z]], dtype=np.float64)
-                function_value, _, _ = objective_function(input_values, t=0)
-                function_values[x, y, z] = function_value
-
-    # Create the contour plot
-    contour = plt.contour(x_range, y_range, function_values[:, :, 0])
-    plt.clabel(contour, fmt='%1.2f')
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.title('Constrains contours and path')
     plt.show()
 
+def plot_feasible_region_2d():
+    fig, ax = plt.subplots()
+    x = np.linspace(-1, 3, 400)
+    colors = ['blue', 'green', 'red', 'purple']
+    # y >= -x + 1
+    ax.plot(x, -x + 1, color=colors[0], label='y >= -x + 1')
+    # y <= 1
+    ax.plot(x, np.ones_like(x), color=colors[1], label='y <= 1')
+    # x <= 2
+    ax.axvline(x=2, color=colors[2], label='x <= 2')
+    # y >= 0
+    ax.axhline(y=0, color=colors[3], label='y >= 0')
+    
+    # Fill feasible region
+    y1 = -x + 1
+    y2 = np.ones_like(x)
+    y3 = np.zeros_like(x)
+    y4 = np.minimum(y1, y2)
+    ax.fill_between(x, y3, y4, where=(y3 < y4), color='gray', alpha=0.5, label='Feasible Region')
 
-def plot_results_quadratic(minimization_function, track_x, track_f, limits_x, limits_y, limits_z,
-                                function_name):
-    fig, ax = plt.subplots(figsize=(10, 10))
-    ax.plot(track_x[:, 0], track_x[:, 1], 'b')
-    ax.scatter(track_x[-1][0], track_x[-1][1], color='r')
+    ax.set_xlim([-1, 3])
+    ax.set_ylim([-1, 3])
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.legend()
+    plt.show()
 
-    x_range = np.linspace(limits_x[0], limits_x[1], 100)
-    y_range = np.linspace(limits_y[0], limits_y[1], 100)
-    grid_x, grid_y = np.meshgrid(x_range, y_range)
-
-    plot_quadratic_feasible_set(grid_x, grid_y)
-    plot_quadratic_contour(minimization_function, limits_x, limits_y, limits_z)
-    plot_learning_curve(track_f, function_name)
-
-
+def plot_objective_vs_iteration(objectives):
+    plt.figure()
+    plt.plot(objectives, 'o-')
+    plt.xlabel('Iteration')
+    plt.ylabel('Objective Value')
+    plt.show()
 
 
 ########### HW1
@@ -210,5 +182,3 @@ def plot_function_values(func_name, results_gd, results_newton):
 
 
 
-
-print("ok")

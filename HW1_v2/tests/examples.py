@@ -2,44 +2,36 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-###### HW2 New Functions:
-def test_qp(X, t):
-    # Function
-    f_x = X[0]**2 + X[1]**2 + (X[2]+1)**2
 
-    # Gradient
-    g_x = np.zeros(3, dtype=np.float64)
-    g_x[0] = 2*t*X[0] - 1/X[0]
-    g_x[1] = 2*t*X[1] - 1/X[1]
-    g_x[2] = 2*t*(X[2] + 1) - 1/X[2]
-
-    # Hessian
-    h_x = np.zeros((3, 3), dtype=np.float64)
-    h_x[0][0] = 2*t + 1/X[0]**2
-    h_x[1][1] = 2*t + 1/X[1]**2
-    h_x[2][2] = 2*t + 1/X[2]**2
-
-    return f_x, g_x, h_x
+def quadratic(x):
+    return x[0] ** 2 + x[1] ** 2 + (x[2] + 1) ** 2
 
 
-def test_lp(X, t):
-    # Function
-    f_x = - X[0] - X[1]
+def example_quadratic():
+    ineq_constraints = [lambda x: - x[0],  # x >= 0
+                        lambda x: - x[1],  # y >= 0
+                        lambda x: - x[2]]  # z >= 0
+    eq_constraints_mat = np.array([1, 1, 1])  # x+y+z
+    eq_constraints_rhs = np.array([1])  # = 1
+    x0 = np.array([0.1, 0.2, 0.7])
+    return quadratic, ineq_constraints, eq_constraints_mat, eq_constraints_rhs, x0
 
-    # Gradient
-    g_x = np.zeros(2, dtype=np.float64)
-    g_x[0] = - t + 1/(1-X[0]-X[1]) - 1/(X[0]-2)
-    g_x[1] = - t + 1/(1-X[0]-X[1]) - 1/(X[1]-1) - 1/X[1]
 
-    # Hessian
-    h_x = np.zeros((2, 2), dtype=np.float64)
-    h_val = (1 / (1-X[0]-X[1]))**2
-    h_x[0][0] = h_val + (1/(X[0]-2))**2
-    h_x[0][1] = h_val
-    h_x[1][0] = h_val
-    h_x[1][1] = h_val + (1/(X[1]-1))**2 + (1/X[1])**2
+def linear(x):
+    return -1 * x[0] - 1 * x[1]
 
-    return f_x, g_x, h_x
+
+def example_linear():
+    ineq_constraints = [lambda x: -x[1],  # y >= 0
+                        lambda x: x[0] - 2,  # x <= 2
+                        lambda x: x[1] - 1,  # y <= 1
+                        lambda x: -x[1] -x[0] + 1]  # y + x >= 1
+    eq_constraints_mat = None
+    eq_constraints_rhs = None
+    x0 = np.array([0.5, 0.75])
+    return linear, ineq_constraints, eq_constraints_mat, eq_constraints_rhs, x0
+
+
 
 ################ HW1
 
@@ -133,113 +125,4 @@ def example_func_nonquad(X, en_hessian):
     return func_x, grad_x, hessian_x
 
 
-print("ok")
 
-import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-
-# Define the quadratic objective function
-def func_quad(x):
-    return x[0]**2 + x[1]**2 + (x[2] + 1)**2
-
-# Create a grid of points in 3D space
-x = np.linspace(0, 1, 50)
-y = np.linspace(0, 1, 50)
-z = np.linspace(0, 1, 50)
-
-# Initialize an empty grid for the objective function values
-F = np.zeros((50, 50))
-
-# Evaluate the objective function at each point in the grid
-for i in range(50):
-    for j in range(50):
-        for k in range(50):
-            point = [x[i], y[j], z[k]]
-            F[i, j] = func_quad(point)
-
-# Create a 3D plot
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-
-# Create coordinate arrays for the grid
-X, Y = np.meshgrid(x, y)
-
-# Plot the objective function surface
-ax.plot_surface(X, Y, F, cmap='viridis')
-
-# Set labels and title
-ax.set_xlabel('X')
-ax.set_ylabel('Y')
-ax.set_zlabel('Objective Function')
-ax.set_title('Objective Function Surface')
-
-# Show the plot
-plt.show()
-
-print("ok2")
-
-
-print("ok3")
-import numpy as np
-import matplotlib.pyplot as plt
-
-# Define the objective function
-# def objective_func(x, y):
-#     return -x - y  # turned it to a min problem so i flipped the signs
-
-# Define the inequality constraint functions
-def constraint_1(x, y):
-    return y - (-x + 1)
-
-def constraint_2(x, y):
-    return y - 1
-
-def constraint_3(x, y):
-    return x - 2
-
-def constraint_4(x, y):
-    return y
-
-# Create a grid of points in the feasible region
-x = np.linspace(-1, 2, 100)
-y = np.linspace(-1, 1, 100)
-X, Y = np.meshgrid(x, y)
-
-# Evaluate the objective function and constraint functions at each point in the grid
-#Z_obj = objective_func(X, Y)
-
-Z_constr_1 = constraint_1(X, Y)
-Z_constr_2 = constraint_2(X, Y)
-Z_constr_3 = constraint_3(X, Y)
-Z_constr_4 = constraint_4(X, Y)
-
-# Create a scatter plot for the constraints
-fig, ax = plt.subplots()
-
-# Plot the inequality constraints as scattered lines
-ax.scatter(X[Z_constr_1 >= 0], Y[Z_constr_1 >= 0], color='r', label='Constraint 1')
-ax.scatter(X[Z_constr_2 >= 0], Y[Z_constr_2 >= 0], color='g', label='Constraint 2')
-ax.scatter(X[Z_constr_3 >= 0], Y[Z_constr_3 >= 0], color='b', label='Constraint 3')
-ax.scatter(X[Z_constr_4 >= 0], Y[Z_constr_4 >= 0], color='m', label='Constraint 4')
-
-# Plot the first constraint as a line
-x_line = np.linspace(0, 3, 100)
-y_line = 1 + x_line
-ax.plot(x_line, y_line, 'k--', label='Constraint 1')
-
-# Set labels and title
-ax.set_xlabel('X')
-ax.set_ylabel('Y')
-ax.set_title('Constraints')
-ax.legend()
-
-# Create a contour plot for the feasible area
-levels = [0]  # Contour level of 0 represents the feasible area
-ax.contour(X, Y, Z_constr_1, levels, colors='gray', alpha=0.3)
-ax.contour(X, Y, Z_constr_2, levels, colors='gray', alpha=0.3)
-ax.contour(X, Y, Z_constr_3, levels, colors='gray', alpha=0.3)
-ax.contour(X, Y, Z_constr_4, levels, colors='gray', alpha=0.3)
-
-# Show the plot
-plt.show()
